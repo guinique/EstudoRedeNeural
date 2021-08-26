@@ -1,0 +1,15 @@
+FAZER O SETUP DO AMBIENTE
+
+criar o ambiente python virtual
+
+python versão utilizada 3.8.0
+
+instalar requirements.txt
+
+COMO RODAR A REDE
+
+ativar o ambiente virtual python 
+.\my_env\Scripts\activate
+
+rodar o arquivo python
+python '.\testeSigmoid_revisao_multiclasse_final.py'
