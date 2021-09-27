@@ -49,7 +49,7 @@ os.mkdir(path)
 
 # nome = []
 # leitura das imagens e dos valores de teste
-dim = (224, 224)
+dim = (299, 299)
 imgCovid = []
 valCovid = []
 for x in covid:
