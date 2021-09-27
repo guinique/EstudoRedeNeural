@@ -32,9 +32,9 @@ import glob
 import random
 
 # ----------------------------------------------------------
-covid = glob.glob("COVID-19_Radiography_Dataset - Copia/COVID/*")
-normal = glob.glob("COVID-19_Radiography_Dataset - Copia/Normal/*")
-pneumonia = glob.glob("COVID-19_Radiography_Dataset - Copia/Viral Pneumonia/*")
+covid = glob.glob("COVID-19_Radiography_Dataset/COVID/*")
+normal = glob.glob("COVID-19_Radiography_Dataset/Normal/*")
+pneumonia = glob.glob("COVID-19_Radiography_Dataset/Viral Pneumonia/*")
 
 # Directory
 directory = "pastaNaoNomeada"
@@ -104,27 +104,24 @@ y_train = np.array(y_train)
 y_test = np.array(y_test)
 valValid = np.array(valValid)
 
-y_train = keras.utils.to_categorical(y_train,3)
-y_test = keras.utils.to_categorical(y_test,3)
+lalala_train = keras.utils.to_categorical(y_train,3)
+lalala_test = keras.utils.to_categorical(y_test,3)
 
 inputs = np.concatenate((x_train, x_test), axis=0)
 targets = np.concatenate((y_train, y_test), axis=0)
 
-print(x_train)
-
 np.random.seed(42)
 
 batch_size = 290
-epochs = 5
+epochs = 50
 cm_array = []
 # K-fold Cross Validation model evaluation
-opt = keras.optimizers.Adam(learning_rate=0.0004)
+opt = keras.optimizers.Adam(learning_rate=0.0003)
 
 earlystopping = callbacks.EarlyStopping(monitor ="val_loss", 
                                         mode ="min", patience = 3, 
                                         restore_best_weights = True)
 kfold = StratifiedKFold(n_splits=5, shuffle=True)
-
 # print(y_train[0])
 # print(y_train[1])
 # print(y_train[2])
@@ -159,13 +156,39 @@ acc = []
 spe = []
 
 
-print(type_of_target(targets))
-print(targets.shape)
-
 
 
 for train, test in kfold.split(inputs, targets):
 
+    # unique, counts = np.unique(targets[train], return_counts=True)
+    # print(dict(zip(unique, counts)))
+
+    # unique, counts = np.unique(targets[test], return_counts=True)
+    # print(dict(zip(unique, counts)))
+
+    # plt.imshow(inputs[train][0])
+    # plt.show()
+    # plt.imshow(inputs[test][0])
+    # plt.show()
+
+    weights=class_weight.compute_class_weight('balanced', np.unique(targets[train]), targets[train])
+    weights = {l:c for l,c in zip(np.unique(targets[train]), weights)}
+    print(weights)
+
+    print('----------------------------------------------------------------')
+    print(weights)
+
+    auxTrain = keras.utils.to_categorical(targets[train],3)
+    auxTest = keras.utils.to_categorical(targets[test],3)
+
+    
+    # FAZER SISTEMA DOS WEIGTHS DAS CLASSES
+    # FAZER SISTEMA DOS WEIGTHS DAS CLASSES
+    # FAZER SISTEMA DOS WEIGTHS DAS CLASSES
+    # FAZER SISTEMA DOS WEIGTHS DAS CLASSES
+    # FAZER SISTEMA DOS WEIGTHS DAS CLASSES
+    # FAZER SISTEMA DOS WEIGTHS DAS CLASSES
+    # FAZER SISTEMA DOS WEIGTHS DAS CLASSES
     # weights=class_weight.compute_class_weight('balanced', np.unique(targets[train]), targets[train])
 
     # construção da rede
@@ -184,7 +207,7 @@ for train, test in kfold.split(inputs, targets):
 
     # treinamento do modelo
     # history = model.fit(inputs[train], targets[train],epochs=epochs, batch_size=batch_size, validation_data=(inputs[test], targets[test]), callbacks=[earlystopping])  
-    history = model.fit(inputs[train], targets[train],epochs=epochs, batch_size=batch_size, validation_data=(inputs[test], targets[test]))  
+    history = model.fit(inputs[train], auxTrain,epochs=epochs, batch_size=batch_size, validation_data=(inputs[test], auxTest), class_weight=weights)  
 
     print('loss e accuracy')
     print(history.history['val_loss'])
@@ -199,7 +222,7 @@ for train, test in kfold.split(inputs, targets):
     # print(matriz_confusao)
 
     cm_array.append(matriz_confusao)
-    print(cm_array)
+    # print(cm_array)
     tp = matriz_confusao[0][0]
 
     tn = matriz_confusao[1][1]
@@ -255,19 +278,19 @@ for train, test in kfold.split(inputs, targets):
         plt.show()
 
 
-print("metricas - valores de cada fold e desvio padrão final")
-print("\nprecision")
-print(pre)
-print(np.std(pre))
-print("\nspecificity")
-print(spe)
-print(np.std(spe))
-print("\naccuracy")
-print(acc)
-print(np.std(acc))
-print("\nrecall")
-print(rec)
-print(np.std(rec))
+# print("metricas - valores de cada fold e desvio padrão final")
+# print("\nprecision")
+# print(pre)
+# print(np.std(pre))
+# print("\nspecificity")
+# print(spe)
+# print(np.std(spe))
+# print("\naccuracy")
+# print(acc)
+# print(np.std(acc))
+# print("\nrecall")
+# print(rec)
+# print(np.std(rec))
 f= open(path+"/calcs.txt","w+")
 f.write('precision \n')
 f.write(str(pre)+'\n')
