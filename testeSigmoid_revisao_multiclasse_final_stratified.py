@@ -13,6 +13,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, BatchNormalization, Conv2D
 from tensorflow.python.keras.layers import Dropout, Input, MaxPooling2D, AveragePooling2D
 from tensorflow.keras.callbacks import EarlyStopping
+from keras.regularizers import l2
 
 from tensorflow.keras import backend as K
 from tensorflow.keras import callbacks
@@ -49,12 +50,17 @@ os.mkdir(path)
 
 # nome = []
 # leitura das imagens e dos valores de teste
-dim = (299, 299)
+dim = (224, 224)
 imgCovid = []
 valCovid = []
+clahe = cv2.createCLAHE(clipLimit=2.0,tileGridSize=(4,4))
 for x in covid:
     # nome.append(x)
     imgAux = cv2.imread(x, cv2.IMREAD_GRAYSCALE)
+    # cv2.imshow("Input",imgAux)
+    imgAux = clahe.apply(imgAux)
+    # cv2.imshow("clahe",imgAux)
+    cv2.waitKey()
     imgCovidResized= cv2.resize(imgAux,dim, interpolation = cv2.INTER_AREA)
     imgCovid.append(imgCovidResized)
     valCovid.append(1)
@@ -64,6 +70,7 @@ valNormal = []
 for x in normal:
     # nome.append(x)
     imgAux = cv2.imread(x, cv2.IMREAD_GRAYSCALE)
+    imgAux = clahe.apply(imgAux)
     imgNormalResized= cv2.resize(imgAux,dim, interpolation = cv2.INTER_AREA)
     imgNormal.append(imgNormalResized)
     valNormal.append(0)
@@ -74,6 +81,7 @@ valPneumonia = []
 for x in pneumonia:
     # nome.append(x)
     imgAux = cv2.imread(x, cv2.IMREAD_GRAYSCALE)
+    imgAux = clahe.apply(imgAux)
     imgPneumoniaResized= cv2.resize(imgAux,dim, interpolation = cv2.INTER_AREA)
     imgPneumonia.append(imgPneumoniaResized)
     valPneumonia.append(2)
@@ -116,7 +124,8 @@ batch_size = 290
 epochs = 50
 cm_array = []
 # K-fold Cross Validation model evaluation
-opt = keras.optimizers.Adam(learning_rate=0.0003)
+learningRate = 0.0003
+opt = keras.optimizers.Adam(learning_rate=learningRate)
 
 earlystopping = callbacks.EarlyStopping(monitor ="val_loss", 
                                         mode ="min", patience = 3, 
@@ -155,7 +164,9 @@ acc = []
 # Specificity
 spe = []
 
-
+print("epochs: ",epochs)
+print("batch size: ",batch_size)
+print("learning rate: ",learningRate)
 
 
 for train, test in kfold.split(inputs, targets):
@@ -181,27 +192,17 @@ for train, test in kfold.split(inputs, targets):
     auxTrain = keras.utils.to_categorical(targets[train],3)
     auxTest = keras.utils.to_categorical(targets[test],3)
 
-    
-    # FAZER SISTEMA DOS WEIGTHS DAS CLASSES
-    # FAZER SISTEMA DOS WEIGTHS DAS CLASSES
-    # FAZER SISTEMA DOS WEIGTHS DAS CLASSES
-    # FAZER SISTEMA DOS WEIGTHS DAS CLASSES
-    # FAZER SISTEMA DOS WEIGTHS DAS CLASSES
-    # FAZER SISTEMA DOS WEIGTHS DAS CLASSES
-    # FAZER SISTEMA DOS WEIGTHS DAS CLASSES
-    # weights=class_weight.compute_class_weight('balanced', np.unique(targets[train]), targets[train])
-
     # construção da rede
     model = Sequential()
-    model.add(Conv2D(6,(3,3), input_shape=(224,224,1), strides=(1,1), activation='relu'))
+    model.add(Conv2D(6,(3,3), input_shape=(224,224,1), strides=(1,1), activation='relu', kernel_regularizer=l2(0.001), bias_regularizer=l2(0.001)))
     model.add(MaxPooling2D())
-    model.add(Conv2D(16,(3,3), activation='relu'))
+    model.add(Conv2D(16,(3,3), activation='relu', kernel_regularizer=l2(0.001), bias_regularizer=l2(0.001)))
     model.add(MaxPooling2D())
     model.add(Flatten())
-    model.add(Dense(120,activation='relu'))
-    model.add(Dense(84,activation='relu'))
-    model.add(Dropout(0.25))
-    model.add(Dense(3,activation='softmax', name='predict'))
+    model.add(Dense(120,activation='relu', kernel_regularizer=l2(0.001), bias_regularizer=l2(0.001)))
+    model.add(Dense(84,activation='relu', kernel_regularizer=l2(0.001), bias_regularizer=l2(0.001)))
+    model.add(Dropout(0.30))
+    model.add(Dense(3,activation='softmax', name='predict', kernel_regularizer=l2(0.001), bias_regularizer=l2(0.001)))
     model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
     model.summary()
 
