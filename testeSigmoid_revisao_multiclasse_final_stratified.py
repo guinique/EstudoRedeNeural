@@ -33,9 +33,13 @@ import glob
 import random
 
 # ----------------------------------------------------------
-covid = glob.glob("COVID-19_Radiography_Dataset/COVID/*")
-normal = glob.glob("COVID-19_Radiography_Dataset/Normal/*")
-pneumonia = glob.glob("COVID-19_Radiography_Dataset/Viral Pneumonia/*")
+# covid = glob.glob("COVID-19_Radiography_Dataset/COVID/*")
+# normal = glob.glob("COVID-19_Radiography_Dataset/Normal/*")
+# pneumonia = glob.glob("COVID-19_Radiography_Dataset/Viral Pneumonia/*")
+
+covid = glob.glob("DATASET3/COVID/*")
+normal = glob.glob("DATASET3/Normal/*")
+pneumonia = glob.glob("DATASET3/Viral Pneumonia/*")
 
 # Directory
 directory = "pastaNaoNomeada"
@@ -194,15 +198,15 @@ for train, test in kfold.split(inputs, targets):
 
     # construção da rede
     model = Sequential()
-    model.add(Conv2D(6,(3,3), input_shape=(224,224,1), strides=(1,1), activation='relu', kernel_regularizer=l2(0.001), bias_regularizer=l2(0.001)))
+    model.add(Conv2D(6,(3,3), input_shape=(224,224,1), strides=(1,1), activation='relu'))
     model.add(MaxPooling2D())
-    model.add(Conv2D(16,(3,3), activation='relu', kernel_regularizer=l2(0.001), bias_regularizer=l2(0.001)))
+    model.add(Conv2D(16,(3,3), activation='relu'))
     model.add(MaxPooling2D())
     model.add(Flatten())
-    model.add(Dense(120,activation='relu', kernel_regularizer=l2(0.001), bias_regularizer=l2(0.001)))
-    model.add(Dense(84,activation='relu', kernel_regularizer=l2(0.001), bias_regularizer=l2(0.001)))
+    model.add(Dense(120,activation='relu'))
+    model.add(Dense(84,activation='relu'))
     model.add(Dropout(0.30))
-    model.add(Dense(3,activation='softmax', name='predict', kernel_regularizer=l2(0.001), bias_regularizer=l2(0.001)))
+    model.add(Dense(3,activation='softmax', name='predict'))
     model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
     model.summary()
 
@@ -307,7 +311,7 @@ f.write(str(rec)+'\n')
 f.write(str(np.std(rec))+"\n\n")
 f.close()
 
-cm_plot_labels = ['Covid -','Covid +','Pneumonia Viral']
+cm_plot_labels = ['Normal','Covid +','Pneumonia Viral']
 print(np.mean(cm_array, axis=0))
 mediakfold = np.floor(np.mean(cm_array, axis=0))
 
