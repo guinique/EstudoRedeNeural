@@ -4,7 +4,7 @@ import itertools
 import numpy as np
 from matplotlib import pyplot as plt
 # from keras.utils import np_utils
-import tensorflow.keras as keras
+from tensorflow import keras
 
 import cv2
 import os
@@ -13,7 +13,8 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, BatchNormalization, Conv2D
 from tensorflow.python.keras.layers import Dropout, Input, MaxPooling2D, AveragePooling2D
 from tensorflow.keras.callbacks import EarlyStopping
-from keras.regularizers import l2
+from tensorflow.keras.regularizers import l2
+
 
 from tensorflow.keras import backend as K
 from tensorflow.keras import callbacks
@@ -23,85 +24,45 @@ from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import KFold
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedKFold
+import sklearn
 from sklearn.utils import class_weight
 from sklearn.utils.multiclass import type_of_target
 # from sklearn.preprocessing import MinMaxScaler
 # scaler = MinMaxScaler(feature_range=(0,1))
+
+import tensorflow as tf
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
 import glob
 
 import random
 
 # ----------------------------------------------------------
-covid = glob.glob("COVID-19_Radiography_Dataset - Copia/COVID/*")
-normal = glob.glob("COVID-19_Radiography_Dataset - Copia/Normal/*")
-pneumonia = glob.glob("COVID-19_Radiography_Dataset - Copia/Viral Pneumonia/*")
+# covid = glob.glob("COVID-19_Radiography_Dataset/COVID/*")
+# normal = glob.glob("COVID-19_Radiography_Dataset/Normal/*")
+# pneumonia = glob.glob("COVID-19_Radiography_Dataset/Viral Pneumonia/*")
 
-# covid = glob.glob("uniaoDatasets/COVID/*")
-# normal = glob.glob("uniaoDatasets/Normal/*")
-# pneumonia = glob.glob("uniaoDatasets/Viral Pneumonia/*")
-
-# predict_covid = glob.glob("COVID_IEEE/COVID/*")
-# predict_normal = glob.glob("COVID_IEEE/Normal/*")
-# predict_pneumonia = glob.glob("COVID_IEEE/Viral Pneumonia/*")
+covid = glob.glob("COVID-19_Radiography_Dataset/COVID/*")
+normal = glob.glob("COVID-19_Radiography_Dataset/Normal/*")
+pneumonia = glob.glob("COVID-19_Radiography_Dataset/Viral Pneumonia/*")
 
 # Directory
 directory = "pastaNaoNomeada"
   
 # Parent Directory path
-parent_dir = "C:/Users/Nique/Desktop/resultados_rede"
+parent_dir = "/media/gui/DE2AFC2D2AFC0475/Users/Nique/Desktop/resultados_rede"
   
 # Path
 path = os.path.join(parent_dir, directory)
 
 os.mkdir(path)
 
+# nome = []
+# leitura das imagens e dos valores de teste
 dim = (224, 224)
-clahe = cv2.createCLAHE(clipLimit=2.0,tileGridSize=(4,4))
-# ____________________________________________________________
-
-# predImgCovid = []
-# predValCovid = []
-# for x in predict_covid:
-#     # nome.append(x)
-#     imgAux = cv2.imread(x, cv2.IMREAD_GRAYSCALE)
-#     # cv2.imshow("Input",imgAux)
-#     imgAux = clahe.apply(imgAux)
-#     # cv2.imshow("clahe",imgAux)
-#     cv2.waitKey()
-#     imgCovidResized= cv2.resize(imgAux,dim, interpolation = cv2.INTER_AREA)
-#     predImgCovid.append(imgCovidResized)
-#     predValCovid.append(1)
-
-# predImgNormal = []
-# predValNormal = []
-# for x in predict_normal:
-#     # nome.append(x)
-#     imgAux = cv2.imread(x, cv2.IMREAD_GRAYSCALE)
-#     imgAux = clahe.apply(imgAux)
-#     imgNormalResized= cv2.resize(imgAux,dim, interpolation = cv2.INTER_AREA)
-#     predImgNormal.append(imgNormalResized)
-#     predValNormal.append(0)
-
-
-# predImgPneumonia = []
-# predValPneumonia = []
-# for x in predict_pneumonia:
-#     # nome.append(x)
-#     imgAux = cv2.imread(x, cv2.IMREAD_GRAYSCALE)
-#     imgAux = clahe.apply(imgAux)
-#     imgPneumoniaResized= cv2.resize(imgAux,dim, interpolation = cv2.INTER_AREA)
-#     predImgPneumonia.append(imgPneumoniaResized)
-#     predValPneumonia.append(2)
-
-
-# predImgs = predImgCovid + predImgNormal + predImgPneumonia
-# predVals = predValCovid + predValNormal + predValPneumonia
-# ________________________________________________________________
-
-
 imgCovid = []
 valCovid = []
+clahe = cv2.createCLAHE(clipLimit=2.0,tileGridSize=(4,4))
 for x in covid:
     # nome.append(x)
     imgAux = cv2.imread(x, cv2.IMREAD_GRAYSCALE)
@@ -134,7 +95,6 @@ for x in pneumonia:
     imgPneumonia.append(imgPneumoniaResized)
     valPneumonia.append(2)
 
-
 imgs = imgCovid + imgNormal + imgPneumonia
 vals = valCovid + valNormal + valPneumonia
 
@@ -147,26 +107,22 @@ x_train, x_test, y_train, y_test = train_test_split(imgTeste,valTeste, test_size
 x_train = np.array(x_train)
 x_test = np.array(x_test)
 imgValid = np.array(imgValid)
-# predImgs = np.array(predImgs)
 
 x_train = np.reshape(x_train,(len(x_train),224,224,1)).astype('float32')
 x_test = np.reshape(x_test,(len(x_test),224,224,1)).astype('float32')
 imgValid = np.reshape(imgValid,(len(imgValid),224,224,1)).astype('float32')
-# predImgs = np.reshape(predImgs,(len(predImgs),224,224,1)).astype('float32')
 
 # normalização dos valores dos pixels
 x_test /= 255
 x_train /= 255
 imgValid /= 255
-# predImgs /= 255
 
 y_train = np.array(y_train)
 y_test = np.array(y_test)
 valValid = np.array(valValid)
-# predVals = np.array(predVals)
 
-# lalala_train = keras.utils.to_categorical(y_train,3)
-# lalala_test = keras.utils.to_categorical(y_test,3)
+lalala_train = keras.utils.to_categorical(y_train,3)
+lalala_test = keras.utils.to_categorical(y_test,3)
 
 inputs = np.concatenate((x_train, x_test), axis=0)
 targets = np.concatenate((y_train, y_test), axis=0)
@@ -247,15 +203,15 @@ for train, test in kfold.split(inputs, targets):
 
     # construção da rede
     model = Sequential()
-    model.add(Conv2D(6,(3,3), input_shape=(224,224,1), strides=(1,1), activation='relu'))
+    model.add(Conv2D(6,(3,3), input_shape=(224,224,1), strides=(1,1), activation='relu', kernel_regularizer=l2(0.0001), bias_regularizer=l2(0.0001)))
     model.add(MaxPooling2D())
-    model.add(Conv2D(16,(3,3), activation='relu'))
+    model.add(Conv2D(16,(3,3), activation='relu', kernel_regularizer=l2(0.0001), bias_regularizer=l2(0.0001)))
     model.add(MaxPooling2D())
     model.add(Flatten())
-    model.add(Dense(120,activation='relu'))
-    model.add(Dense(84,activation='relu'))
+    model.add(Dense(120,activation='relu', kernel_regularizer=l2(0.0001), bias_regularizer=l2(0.0001)))
+    model.add(Dense(84,activation='relu', kernel_regularizer=l2(0.0001), bias_regularizer=l2(0.0001)))
     model.add(Dropout(0.30))
-    model.add(Dense(3,activation='softmax', name='predict'))
+    model.add(Dense(3,activation='softmax',kernel_regularizer=l2(0.0001), bias_regularizer=l2(0.0001), name='predict'))
     model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
     model.summary()
 
